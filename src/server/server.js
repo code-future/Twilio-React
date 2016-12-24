@@ -1,14 +1,12 @@
 import express from 'express';
 import bodyParser from 'body-parser';
+import logger from 'morgan';
+import compression from 'compression';
 import path from 'path';
-
-import { renderToString } from 'react-dom/server';
-
-import React from 'react';
-import App from '../client/components/App.js';
 
 const app = express();
 app.use('/node_modules', express.static(path.join(__dirname, '../../node_modules')));
+app.use(express.static(path.join(__dirname, '../client/public'), { maxAge: 31557600000 }));
 
 const webpack              = require('webpack');
 const webpackDevMiddleware = require('webpack-dev-middleware');
@@ -18,34 +16,13 @@ const compiler = webpack(config);
 app.use(webpackDevMiddleware(compiler, { noInfo: true, publicPath: config.output.publicPath }));
 app.use(webpackHotMiddleware(compiler));
 
-const renderFullPage = html => {
-  const initialState = {};
-  return `
-  <!doctype html>
-  <html lang="utf-8">
-    <head>
-      <title>React/MobX boilerplate</title>
-      <script>
-        window.initialState= ${JSON.stringify(initialState)}
-      </script>
-    </head>
-    <body>
-      <section id="app"><div>${html}</div></section>
-      <script src="/static/bundle.js"></script>
-    </body>
-  </html>
-  `
-};
-
+app.use(compression());
 app.use(bodyParser.json());
+app.use(logger('dev'));
 
 //Root
 app.get('/', function(req, res) {
-  const initView = renderToString((
-    <App />
-  ));
-  const page = renderFullPage(initView);
-  res.status(200).send(page);
+  res.sendFile(path.join(__dirname, '../../index.html'))
 })
 //404 handler
 app.get('*', function(req, res) {
