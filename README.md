@@ -1,6 +1,4 @@
-# MobX-React-Webpack-Express
-Boilerplate written in ES6 for building scalable, reactive applications. The stack is as follows:
-
+# Twilio React Project
 
 - React: For rendering views
   - React Router: for managing routes
